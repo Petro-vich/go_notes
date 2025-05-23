@@ -8,6 +8,11 @@ package di
 import (
 	"fmt"
 	"go_notes/internal/repository"
+	"go_notes/pkg/noteiface"
+)
+
+const (
+	RepoTypeJSON = "JSON"
 )
 
 /*
@@ -17,9 +22,9 @@ import (
 Например: у SQL и у JSON один интерфейс NoteRepository который исполняет одни и теже методы
 */
 
-func InitRepository(typeRep string, pathRep string) (repository.NoteRepository, error) {
+func InitRepository(typeRep string, pathRep string) (noteiface.NoteRepository, error) {
 	switch typeRep {
-	case "JSON":
+	case RepoTypeJSON:
 		return repository.NewJSONRepo(pathRep), nil
 	default:
 		return nil, fmt.Errorf("di: invalid repository type %q", typeRep)
