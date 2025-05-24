@@ -37,16 +37,16 @@ func (r *JSONRepo) Create(note *model.Note) error {
 	}
 
 	//Добавляем новый NOTE
-	existing = append(existing, model.Note{
+	existing = append(existing, &model.Note{
 		ID:    note.ID,
 		Title: note.Title,
 		Body:  note.Body,
 	})
 
 	//Переводим структуру Note в структуру NoteDTO
-	var dtos []dto.NoteDTO
+	var dtos []*dto.NoteDTO
 	for _, note := range existing {
-		dtos = append(dtos, dto.FromEntity(note))
+		dtos = append(dtos, dto.FromModel(note))
 	}
 
 	//Кодируем перед записью
@@ -57,7 +57,7 @@ func (r *JSONRepo) Create(note *model.Note) error {
 	return os.WriteFile(r.filepath, data, 0644)
 }
 
-func (r *JSONRepo) GetAll() ([]model.Note, error) {
+func (r *JSONRepo) GetAll() ([]*model.Note, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -65,7 +65,7 @@ func (r *JSONRepo) GetAll() ([]model.Note, error) {
 	data, err := os.ReadFile(r.filepath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []model.Note{}, nil
+			return []*model.Note{}, nil
 		}
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (r *JSONRepo) GetAll() ([]model.Note, error) {
 	}
 
 	//Приводим dtos структуру к структуре Note
-	var result []model.Note
+	var result []*model.Note
 	for _, d := range dtos {
 		result = append(result, d.ToModel())
 	}
@@ -94,7 +94,7 @@ func (r *JSONRepo) Delete(id string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	var newData []model.Note
+	var newData []*model.Note
 	for _, nt := range data {
 		if nt.ID == id {
 			continue
@@ -102,12 +102,12 @@ func (r *JSONRepo) Delete(id string) error {
 		newData = append(newData, nt)
 	}
 
-	var dtos []dto.NoteDTO
+	var dtos []*dto.NoteDTO
 	for _, d := range newData {
-		dtos = append(dtos, dto.FromEntity(d))
+		dtos = append(dtos, dto.FromModel(d))
 	}
 
-	result, err := json.MarshalIndent(newData, "", " ")
+	result, err := json.MarshalIndent(dtos, "", " ")
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (r *JSONRepo) Delete(id string) error {
 	return os.WriteFile(r.filepath, result, 0644)
 }
 
-func (r *JSONRepo) GetById(id string) (*model.Note, error) {
+func (r *JSONRepo) GetByID(id string) (*model.Note, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -126,7 +126,7 @@ func (r *JSONRepo) GetById(id string) (*model.Note, error) {
 
 	for _, nt := range data {
 		if nt.ID == id {
-			return &nt, nil
+			return nt, nil
 		}
 	}
 

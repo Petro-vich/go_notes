@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"go_notes/internal/repository"
 	"go_notes/pkg/noteiface"
+	"os"
 )
 
 const (
-	RepoTypeJSON = "JSON"
+	DbTypeJson   = "JSON"
+	DbTypeSQLite = "SQLITE"
 )
 
 /*
@@ -22,11 +24,20 @@ const (
 Например: у SQL и у JSON один интерфейс NoteRepository который исполняет одни и теже методы
 */
 
-func InitRepository(typeRep string, pathRep string) (noteiface.NoteRepository, error) {
-	switch typeRep {
-	case RepoTypeJSON:
-		return repository.NewJSONRepo(pathRep), nil
+func InitRepository() (noteiface.NoteRepository, error) {
+	repoType := os.Getenv("REPO_TYPE")
+	repoPath := os.Getenv("REPO_PATH")
+
+	switch repoType {
+	case DbTypeJson:
+		return repository.NewJSONRepo(repoPath), nil
+	case DbTypeSQLite:
+		rep, err := repository.NewSQLiteRepo(repoPath)
+		if err != nil {
+			return nil, err
+		}
+		return rep, nil
 	default:
-		return nil, fmt.Errorf("di: invalid repository type %q", typeRep)
+		return nil, fmt.Errorf("di: invalid repository type %q", repoType)
 	}
 }

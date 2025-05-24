@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go_notes/internal/di"
 	"go_notes/internal/model"
-	"os"
 	"strings"
 )
 
@@ -15,10 +14,8 @@ func Run(args []string) error {
 	}
 
 	cmd := strings.ToLower(args[0])
-	repoType := getenv("REPO_TYPE", "JSON")
-	repoPath := getenv("REPO_PATH", "tasks.json")
 
-	repo, err := di.InitRepository(repoType, repoPath)
+	repo, err := di.InitRepository()
 	if err != nil {
 		return err
 	}
@@ -57,11 +54,4 @@ func Run(args []string) error {
 	}
 
 	return nil
-}
-
-func getenv(key, def string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return def
 }
